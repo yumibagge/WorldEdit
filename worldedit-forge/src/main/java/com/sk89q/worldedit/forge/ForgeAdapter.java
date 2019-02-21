@@ -29,16 +29,21 @@ import com.sk89q.worldedit.registry.state.IntegerProperty;
 import com.sk89q.worldedit.registry.state.Property;
 import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.world.World;
+import com.sk89q.worldedit.world.block.BlockStateHolder;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 final class ForgeAdapter {
@@ -110,6 +115,37 @@ final class ForgeAdapter {
                     .collect(Collectors.toList()));
         }
         return new IPropertyAdapter<>(property);
+    }
+    
+    public static IBlockState adaptState(BlockStateHolder<?> block) {
+        Block mcBlock = Block.getBlockFromName(block.getBlockType().getId());
+        IBlockState newState = mcBlock.getDefaultState();
+        Map<Property<?>, Object> states = block.getStates();
+        newState = applyProperties(mcBlock.getBlockState(), newState, states);
+        return newState;
+    }
+
+    // Can't get the "Object" to be right for withProperty w/o this
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static IBlockState applyProperties(BlockStateContainer stateContainer, IBlockState newState, Map<Property<?>, Object> states) {
+        for (Map.Entry<Property<?>, Object> state : states.entrySet()) {
+
+            IProperty property = stateContainer.getProperty(state.getKey().getName());
+            Comparable value = (Comparable) state.getValue();
+            // we may need to adapt this value, depending on the source prop
+            if (property instanceof PropertyDirection) {
+                Direction dir = (Direction) value;
+                value = ForgeAdapter.adapt(dir);
+            } else if (property instanceof PropertyEnum) {
+                String enumName = (String) value;
+                value = ((PropertyEnum<?>) property).parseValue((String) value).or(() -> {
+                    throw new IllegalStateException("Enum property " + property.getName() + " does not contain " + enumName);
+                });
+            }
+
+            newState = newState.withProperty(property, value);
+        }
+        return newState;
     }
 
 }

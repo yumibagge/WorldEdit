@@ -31,6 +31,7 @@ import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.entity.Entity;
 import com.sk89q.worldedit.internal.Constants;
+import com.sk89q.worldedit.internal.block.BlockStateIdAcess;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.math.Vector3;
@@ -104,6 +105,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -182,10 +184,8 @@ public class ForgeWorld extends AbstractWorld {
         Chunk chunk = world.getChunkFromChunkCoords(x >> 4, z >> 4);
         BlockPos pos = new BlockPos(x, y, z);
         IBlockState old = chunk.getBlockState(pos);
-        Block mcBlock = Block.getBlockFromName(block.getBlockType().getId());
-        IBlockState newState = mcBlock.getDefaultState();
-        Map<Property<?>, Object> states = block.getStates();
-        newState = applyProperties(mcBlock.getBlockState(), newState, states);
+        OptionalInt stateId = BlockStateIdAcess.getBlockStateId(block.toImmutableState());
+        IBlockState newState = stateId.isPresent() ? Block.getStateById(stateId.getAsInt()) : ForgeAdapter.adaptState(block);
         IBlockState successState = chunk.setBlockState(pos, newState);
         boolean successful = successState != null;
 
@@ -215,29 +215,6 @@ public class ForgeWorld extends AbstractWorld {
     public boolean notifyAndLightBlock(BlockVector3 position, BlockState previousType) throws WorldEditException {
         // TODO Implement
         return false;
-    }
-
-    // Can't get the "Object" to be right for withProperty w/o this
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private IBlockState applyProperties(BlockStateContainer stateContainer, IBlockState newState, Map<Property<?>, Object> states) {
-        for (Map.Entry<Property<?>, Object> state : states.entrySet()) {
-
-            IProperty property = stateContainer.getProperty(state.getKey().getName());
-            Comparable value = (Comparable) state.getValue();
-            // we may need to adapt this value, depending on the source prop
-            if (property instanceof PropertyDirection) {
-                Direction dir = (Direction) value;
-                value = ForgeAdapter.adapt(dir);
-            } else if (property instanceof PropertyEnum) {
-                String enumName = (String) value;
-                value = ((PropertyEnum<?>) property).parseValue((String) value).or(() -> {
-                    throw new IllegalStateException("Enum property " + property.getName() + " does not contain " + enumName);
-                });
-            }
-
-            newState = newState.withProperty(property, value);
-        }
-        return newState;
     }
 
     @Override

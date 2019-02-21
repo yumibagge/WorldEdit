@@ -90,9 +90,6 @@ public class ForgeWorldEdit {
         workingDir = new File(event.getModConfigurationDirectory() + File.separator + "worldedit");
         workingDir.mkdir();
 
-        config = new ForgeConfiguration(this);
-        config.load();
-
         MinecraftForge.EVENT_BUS.register(ThreadSafeCache.getInstance());
     }
 
@@ -128,17 +125,20 @@ public class ForgeWorldEdit {
 
         for (ResourceLocation name : Block.REGISTRY.getKeys()) {
             String nameStr = name.toString();
-            if (!BlockType.REGISTRY.keySet().contains(nameStr)) {
+            if (BlockTypes.get(nameStr) == null) {
                 BlockTypes.register(new BlockType(nameStr));
             }
         }
 
         for (ResourceLocation name : Item.REGISTRY.getKeys()) {
             String nameStr = name.toString();
-            if (!ItemType.REGISTRY.keySet().contains(nameStr)) {
+            if (ItemTypes.get(nameStr) == null) {
                 ItemTypes.register(new ItemType(nameStr));
             }
         }
+
+        config = new ForgeConfiguration(this);
+        config.load();
     }
 
     @EventHandler

@@ -92,7 +92,7 @@ public class LegacyMapper {
                 blockToStringMap.put(state, id);
                 stringToBlockMap.put(id, state);
             } catch (Exception e) {
-                log.warning("Unknown block: " + blockEntry.getValue());
+                //log.warning("Unknown block: " + blockEntry.getValue());
             }
         }
 
@@ -103,7 +103,7 @@ public class LegacyMapper {
                 itemToStringMap.put(type, id);
                 stringToItemMap.put(id, type);
             } catch (Exception e) {
-                log.warning("Unknown item: " + itemEntry.getValue());
+                //log.warning("Unknown item: " + itemEntry.getValue());
             }
         }
     }

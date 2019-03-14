@@ -28,6 +28,7 @@ import com.sk89q.worldedit.util.command.parametric.ExceptionConverter;
 import com.sk89q.worldedit.util.task.Supervisor;
 
 import java.net.URL;
+import java.util.concurrent.ForkJoinPool;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,7 +66,7 @@ public class ActorCallbackPaste {
                 LOGGER.log(Level.WARNING, "Failed to submit pastebin", throwable);
                 sender.printError("Failed to submit to a pastebin. Please see console for the error.");
             }
-        });
+        }, ForkJoinPool.commonPool());
     }
 
 }

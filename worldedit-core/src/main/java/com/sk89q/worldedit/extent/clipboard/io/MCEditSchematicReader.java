@@ -253,9 +253,9 @@ public class MCEditSchematicReader extends NBTSchematicReader {
         // Entities
         // ====================================================================
 
-        List<Tag> entityTags = getTag(schematic, "Entities", ListTag.class).getValue();
+        ListTag entityTags = getTag(schematic, "Entities", ListTag.class);
         if (entityTags != null) {
-            for (Tag tag : entityTags) {
+            for (Tag tag : entityTags.getValue()) {
                 if (tag instanceof CompoundTag) {
                     CompoundTag compound = (CompoundTag) tag;
                     String id = convertEntityId(compound.getString("id"));

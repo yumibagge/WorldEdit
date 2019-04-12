@@ -1,0 +1,7 @@
+units:
+  # Target Coverage: Unknown %
+  - target:
+    - dir: worldedit-core/out/production/classes
+      file: com/sk89q/util/StringUtil.class
+      sourceDir: worldedit-core/src/main/java
+      sourceFile: com/sk89q/util/StringUtil.java
